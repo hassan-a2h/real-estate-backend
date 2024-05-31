@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import dbConnection from './db/config.js';
+import authRoutes from './routes/authRoutes.js';
 
 dotenv.config();
 const app = express();
@@ -16,6 +17,8 @@ app.use(express.json());
 dbConnection();
 
 //  Routes
+app.use('/api/users', authRoutes);
+
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
