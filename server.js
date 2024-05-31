@@ -2,7 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import dbConnection from './db/config';
+import dbConnection from './db/config.js';
 
 dotenv.config();
 const app = express();
