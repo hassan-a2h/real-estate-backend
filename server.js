@@ -4,6 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import dbConnection from './db/config.js';
 import authRoutes from './routes/authRoutes.js';
+import listingsRoutes from './routes/listingsRoutes.js';
 
 dotenv.config();
 const app = express();
@@ -18,6 +19,8 @@ dbConnection();
 
 //  Routes
 app.use('/api/users', authRoutes);
+app.use('/api/listings', listingsRoutes);
+app.use('/api/auth', authRoutes);
 
 app.get('/', (req, res) => {
   res.send('API is running...');
