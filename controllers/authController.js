@@ -54,4 +54,19 @@ const logoutUser = asyncHandler(async (req, res) => {
   res.json({ message: 'Logged out successfully' });
 });
 
-export { registerUser, authUser, logoutUser };
+const checkAuth = (req, res) => {
+  const token = req.header('Authorization')?.split(' ')[1];
+  
+  if (!token) {
+    return res.status(401).json({ message: 'Access token required' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    res.status(200).json({ user: decoded });
+  } catch (error) {
+    res.status(403).json({ message: 'Invalid token' });
+  }
+};
+
+export { registerUser, authUser, logoutUser, checkAuth };
