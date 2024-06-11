@@ -40,7 +40,14 @@ export const createListing = async (req, res) => {
     const savedListing = await newListing.save();
     res.status(201).json(savedListing);
   } catch (error) {
-    res.status(500).json({ message: 'Error creating listing', error });
+      if (error.name === 'ValidationError') {
+        const errors = Object.keys(error.errors).reduce((acc, key) => {
+          acc[key] = error.errors[key].message;
+          return acc;
+        }, {});
+        return res.status(400).json({ errors });
+      }
+      res.status(500).json({ message: 'Error creating listing', error });
   }
 };
 
