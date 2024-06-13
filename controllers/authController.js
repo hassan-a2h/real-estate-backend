@@ -2,6 +2,7 @@ import asyncHandler from 'express-async-handler';
 import User from '../models/User.js';
 import generateToken from '../utils/generateToken.js';
 import dotenv from 'dotenv';
+import jwt from 'jsonwebtoken';
 dotenv.config();
 
 const registerUser = asyncHandler(async (req, res) => {
@@ -70,7 +71,7 @@ const checkAuth = (req, res) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     console.log('decoded', decoded);
-    res.status(200).json({ user: decoded });
+    res.status(200).json({ id: decoded.id });
   } catch (error) {
     res.status(403).json({ message: 'Invalid token' });
   }
