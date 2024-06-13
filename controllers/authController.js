@@ -29,7 +29,7 @@ const registerUser = asyncHandler(async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
-      token: generateToken(user._id),
+      token: generateToken({ id: user._id, role: user.role }),
     });
   } else {
     res.status(400);
@@ -47,7 +47,7 @@ const authUser = asyncHandler(async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
-      token: generateToken(user._id),
+      token: generateToken({ id: user._id, role: user.role }),
       role: user.role,
     });
   } else {
@@ -71,7 +71,7 @@ const checkAuth = (req, res) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     console.log('decoded', decoded);
-    res.status(200).json({ id: decoded.id });
+    res.status(200).json({ id: decoded.userInfo.id, role: decoded.userInfo.role });
   } catch (error) {
     res.status(403).json({ message: 'Invalid token' });
   }
