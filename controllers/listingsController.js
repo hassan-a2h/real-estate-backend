@@ -34,7 +34,7 @@ export const createListing = async (req, res) => {
       price,
       location,
       images,
-      status,
+      status
     });
 
     const savedListing = await newListing.save();

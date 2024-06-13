@@ -1,12 +1,15 @@
 import asyncHandler from 'express-async-handler';
 import User from '../models/User.js';
 import generateToken from '../utils/generateToken.js';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, role = 'user' } = req.body;
 
   const userExists = await User.findOne({ email });
 
+  console.log('found user in db', userExists);
   if (userExists) {
     res.status(400);
     throw new Error('User already exists');
@@ -16,8 +19,10 @@ const registerUser = asyncHandler(async (req, res) => {
     name,
     email,
     password,
+    role,
   });
 
+  console.log('created user', user);
   if (user) {
     res.status(201).json({
       _id: user._id,
@@ -64,6 +69,7 @@ const checkAuth = (req, res) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('decoded', decoded);
     res.status(200).json({ user: decoded });
   } catch (error) {
     res.status(403).json({ message: 'Invalid token' });
