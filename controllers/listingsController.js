@@ -25,7 +25,7 @@ export const getListingById = async (req, res) => {
 
 // Create a new listing
 export const createListing = async (req, res) => {
-  const { title, description, price, location, images, status } = req.body;
+  const { title, description, price, location, images, status, postedBy } = req.body;
 
   try {
     const newListing = new Listing({
@@ -34,7 +34,8 @@ export const createListing = async (req, res) => {
       price,
       location,
       images,
-      status
+      status,
+      postedBy,
     });
 
     const savedListing = await newListing.save();
