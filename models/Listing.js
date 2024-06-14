@@ -24,6 +24,11 @@ const listingSchema = new mongoose.Schema({
     maxlength: 128,
     minlength: 8,
   },
+  category: {
+    type: String,
+    enum: ['villa', 'home', 'apartment', 'building', 'office', 'townhouse', 'shop', 'garage'],
+    required: true,
+  },
   images: [{ type: String }],
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
