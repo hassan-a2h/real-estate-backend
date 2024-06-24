@@ -8,11 +8,13 @@ import dbConnection from './db/config.js';
 import authRoutes from './routes/authRoutes.js';
 import listingsRoutes from './routes/listingsRoutes.js';
 import socialsRoutes from './routes/socialRoutes.js';
+import chatRoutes from './routes/chatRoutes.js';
+import { Message } from './models/Message.js';
 
 dotenv.config();
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
+export const io = new Server(server, {
   cors: {
     origin: '*',
     methods: ['GET', 'POST']
@@ -37,8 +39,20 @@ io.on('connection', (socket) => {
   });
 
   // Listen for messages and broadcast them
-  socket.on('sendMessage', (data) => {
-    io.emit('receiveMessage', data);
+  socket.on('sendMessage', async (data) => {
+    console.log('socket, message received:', data);
+
+    try {
+      console.log('socket, message received:', data);
+      // Save the message to the database
+      const newMessage = new Message({ chatId: data.chatId, senderId: data.userId, message: data.message });
+      await newMessage.save();
+
+      // Broadcast the saved message to all connected clients
+      io.emit('receiveMessage', newMessage);
+    } catch (error) {
+      console.error('Error saving message:', error);
+    }
   });
 });
 
@@ -47,6 +61,7 @@ app.use('/api/users', authRoutes);
 app.use('/api/listings', listingsRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/socials', socialsRoutes);
+app.use('/api/c', chatRoutes);
 
 app.get('/', (req, res) => {
   res.send('API is running...');
