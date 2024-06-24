@@ -43,9 +43,8 @@ io.on('connection', (socket) => {
     console.log('socket, message received:', data);
 
     try {
-      console.log('socket, message received:', data);
       // Save the message to the database
-      const newMessage = new Message({ chatId: data.chatId, senderId: data.userId, message: data.message });
+      const newMessage = new Message({ chatId: data.chatId, senderId: data.senderId, message: data.message });
       await newMessage.save();
 
       // Broadcast the saved message to all connected clients
