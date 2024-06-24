@@ -77,4 +77,40 @@ const checkAuth = (req, res) => {
   }
 };
 
-export { registerUser, authUser, logoutUser, checkAuth };
+const getAgents = async (req, res) => {
+  try {
+    const agents = await User.aggregate([
+      {
+        $match: {
+          role: 'agent'
+        }
+      },
+      {
+        $lookup: {
+          from: 'socialmedias',
+          localField: '_id',
+          foreignField: 'user',
+          as: 'socialMedia'
+        }
+      },
+      {
+        $project: {
+          name: 1,
+          role: 1,
+          socialMedia: 1
+        }
+      }
+    ]);
+
+    if (agents) {
+      return res.status(200).json(agents);
+    } else {
+      return res.status(404).json({ message: 'No agents found' });
+    }
+  } catch(error) {
+    return res.status(500).json({ message: 'Error fetching agents', error });
+  }
+  
+}
+
+export { registerUser, authUser, logoutUser, checkAuth, getAgents };

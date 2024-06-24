@@ -27,13 +27,14 @@ export const getListings = async (req, res) => {
 // Get a single listing by ID
 export const getListingById = async (req, res) => {
   try {
-    const { agentId } = req.body;
-    const listings = await Listing.find({ postedBy: agentId });
+    const { id } = req.params;
+    console.log('property id:', id);
+    const listing = await Listing.findById(id);
 
-    if (!listings) {
+    if (!listing) {
       return res.status(404).json({ message: 'No Listings created by user' });
     }
-    res.status(200).json(listings);
+    res.status(200).json(listing);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching listings', error });
   }
