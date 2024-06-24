@@ -1,4 +1,6 @@
 import express from 'express';
+import http from 'http';
+import { Server } from 'socket.io';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -9,6 +11,13 @@ import socialsRoutes from './routes/socialRoutes.js';
 
 dotenv.config();
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST']
+  }
+});
 const PORT = process.env.PORT || 3000;
 
 //  Middlewares used
@@ -18,6 +27,20 @@ app.use(express.urlencoded({ extended: true }));
 
 //  Initializing connection to MongoDB
 dbConnection();
+
+// Set up a connection event
+io.on('connection', (socket) => {
+  console.log('A user connected: ' + socket.id);
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected: ' + socket.id);
+  });
+
+  // Listen for messages and broadcast them
+  socket.on('sendMessage', (data) => {
+    io.emit('receiveMessage', data);
+  });
+});
 
 //  Routes
 app.use('/api/users', authRoutes);
@@ -34,6 +57,6 @@ app.get('/api/test', (req, res) => {
 });
 
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
