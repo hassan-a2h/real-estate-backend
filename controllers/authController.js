@@ -43,6 +43,7 @@ const authUser = asyncHandler(async (req, res) => {
   const user = await User.findOne({ email });
 
   if (user && user.password === password) {
+    req.headers.userId = user._id;
     res.json({
       _id: user._id,
       name: user.name,
@@ -57,6 +58,7 @@ const authUser = asyncHandler(async (req, res) => {
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
+  req.headers.userId = null;
   res.cookie('token', '', { httpOnly: true, expires: new Date(0) });
   res.json({ message: 'Logged out successfully' });
 });
