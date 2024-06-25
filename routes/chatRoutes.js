@@ -3,6 +3,9 @@ import express from 'express';
 import { Chat } from '../models/Chat.js';
 import { Message } from '../models/Message.js';
 import { io } from '../server.js'; // Import the io instance from server.js
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const router = express.Router();
 
@@ -20,6 +23,7 @@ router.post('/chat', async (req, res) => {
       const initialMessage = new Message({
         chatId: chat._id,
         senderId: userId,
+        receiverId: agentId,
         message: propertyTitle,
         isPropertyTitle: true
       });
@@ -31,6 +35,7 @@ router.post('/chat', async (req, res) => {
       const initialMessage = new Message({
         chatId: chat._id,
         senderId: userId,
+        receiverId: agentId,
         message: propertyTitle,
         isPropertyTitle: true
       });
@@ -46,7 +51,6 @@ router.post('/chat', async (req, res) => {
 // Get user or agent chats
 router.get('/chats/:id', async (req, res) => {
   const { id } = req.params;
-  console.log('chat routes, id:', id);
 
   try {
     const chats = await Chat.find({ $or: [{ userId: id }, { agentId: id }] }).populate('listingIds');
@@ -60,9 +64,20 @@ router.get('/chats/:id', async (req, res) => {
 // Get chat messages
 router.get('/chats/:chatId/messages', async (req, res) => {
   const { chatId } = req.params;
+  const { userId } = req.query;
+  const receiverId = userId;
 
   try {
     const messages = await Message.find({ chatId });
+
+    // Update isRead status for messages intended for the logged-in user
+    for (let message of messages) {
+      if (message?.receiverId?.toString() === receiverId && !message.isRead) {
+        message.isRead = true;
+        await message.save();
+      }
+    }
+
     res.status(200).json(messages);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -81,6 +96,23 @@ router.post('/messages', async (req, res) => {
     io.emit('receiveMessage', newMessage);
 
     res.status(200).json(newMessage);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get unread messages count for a user
+router.get('/unread-messages/:userId', async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    // Find all messages where receiverId matches userId and isRead is false
+    const unreadCount = await Message.countDocuments({
+      receiverId: userId,
+      isRead: false
+    });
+
+    res.status(200).json({ unreadCount });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
