@@ -3,7 +3,7 @@ import express from 'express';
 import { Chat } from '../models/Chat.js';
 import { Message } from '../models/Message.js';
 import { io } from '../server.js'; // Import the io instance from server.js
-import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -53,7 +53,45 @@ router.get('/chats/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
-    const chats = await Chat.find({ $or: [{ userId: id }, { agentId: id }] }).populate('listingIds');
+    // const chats = await Chat.find({ $or: [{ userId: id }, { agentId: id }] }).populate('listingIds');
+
+    const chats = await Chat.aggregate([
+      { $match: { $or: [{ userId: new mongoose.Types.ObjectId(id) }, { agentId: new mongoose.Types.ObjectId(id) }] } },
+      {
+        $lookup: {
+          from: 'messages',
+          localField: '_id',
+          foreignField: 'chatId',
+          as: 'messages'
+        }
+      },
+      {
+        $unwind: {
+          path: '$messages',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $sort: {
+          'messages.createdAt': -1
+        }
+      },
+      {
+        $group: {
+          _id: '$_id',
+          chat: { $first: '$$ROOT' },
+          lastMessage: { $first: '$messages' }
+        }
+      },
+      {
+        $replaceRoot: {
+          newRoot: {
+            $mergeObjects: ['$chat', { lastMessage: '$lastMessage' }]
+          }
+        }
+      }
+    ]);
+
     res.status(200).json(chats);
   } catch (error) {
     console.log('chat fetch error:', error);
@@ -106,6 +144,19 @@ router.post('/messages', async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+});
+
+router.post('/messages/read', async (req, res) => {
+  const { id } = req.body;
+
+  try {
+    const message = await Message.findById(id);
+    message.isRead = true;
+    await message.save();
+    return res.status(200).json(message);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  };
 });
 
 // Get unread messages count for a user
