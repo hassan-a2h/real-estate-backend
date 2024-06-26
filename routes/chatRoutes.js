@@ -69,13 +69,20 @@ router.get('/chats/:chatId/messages', async (req, res) => {
 
   try {
     const messages = await Message.find({ chatId });
+    let unreadMessagesUpdated = false;
 
     // Update isRead status for messages intended for the logged-in user
     for (let message of messages) {
       if (message?.receiverId?.toString() === receiverId && !message.isRead) {
         message.isRead = true;
         await message.save();
+        unreadMessagesUpdated = true;
       }
+    }
+
+    if (unreadMessagesUpdated) {
+      // Emit an event to notify about the updated unread count
+      io.emit('unreadCountUpdated', { userId: receiverId });
     }
 
     res.status(200).json(messages);
@@ -107,12 +114,22 @@ router.get('/unread-messages/:userId', async (req, res) => {
 
   try {
     // Find all messages where receiverId matches userId and isRead is false
-    const unreadCount = await Message.countDocuments({
+    const unreadMessages = await Message.find({
       receiverId: userId,
       isRead: false
     });
 
-    res.status(200).json({ unreadCount });
+    const unreadChats = {};
+
+    for (let message of unreadMessages) {
+      if (!unreadChats[message.chatId]) {
+        unreadChats[message.chatId] = 1;
+      } else {
+        unreadChats[message.chatId]++;
+      }
+    }
+
+    res.status(200).json({ unreadCount: Object.keys(unreadChats).length, unreadChats });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
