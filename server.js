@@ -34,6 +34,10 @@ dbConnection();
 io.on('connection', (socket) => {
   console.log('A user connected: ' + socket.id);
 
+  socket.on('messagesRead', ({ userId }) => {
+    io.emit('unreadCountUpdated', { userId });
+  });
+
   socket.on('disconnect', () => {
     console.log('User disconnected: ' + socket.id);
   });
