@@ -83,6 +83,11 @@ export const getUserChats = async (req, res) => {
             $mergeObjects: ['$chat', { lastMessage: '$lastMessage' }]
           }
         }
+      },
+      {
+        $sort: {
+          'lastMessage.createdAt': -1
+        }
       }
     ]);
 
