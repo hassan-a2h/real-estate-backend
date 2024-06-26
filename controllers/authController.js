@@ -79,6 +79,16 @@ const checkAuth = (req, res) => {
   }
 };
 
+const getUser = async (req, res) => {
+  const { id } = req.params;
+  const user = await User.findById(id);
+  if (user) {
+    return res.status(200).json(user);
+  } else {
+    return res.status(404).json({ message: 'User not found' });
+  }
+}
+
 const getAgents = async (req, res) => {
   try {
     const agents = await User.aggregate([
@@ -115,4 +125,4 @@ const getAgents = async (req, res) => {
   
 }
 
-export { registerUser, authUser, logoutUser, checkAuth, getAgents };
+export { registerUser, authUser, logoutUser, checkAuth, getAgents, getUser };
