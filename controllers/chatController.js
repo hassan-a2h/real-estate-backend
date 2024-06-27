@@ -19,7 +19,7 @@ export const getChat = async (req, res) => {
         chatId: chat._id,
         senderId: userId,
         receiverId: agentId,
-        message: propertyTitle,
+        message: listingId,
         isPropertyTitle: true
       });
       await initialMessage.save();
