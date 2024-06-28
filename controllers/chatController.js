@@ -120,8 +120,10 @@ export const getChatMessages = async (req, res) => {
       // Emit an event to notify about the updated unread count
       io.emit('unreadCountUpdated', { userId: receiverId });
     }
-
-    res.status(200).json(messages);
+    
+    // Use sortedMessages in case you are using reflections
+    const sortedMessages = messages.reverse();
+    res.status(200).json(sortedMessages);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

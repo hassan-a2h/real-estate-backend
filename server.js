@@ -38,10 +38,6 @@ io.on('connection', (socket) => {
     io.emit('unreadCountUpdated', { userId });
   });
 
-  socket.on('disconnect', () => {
-    console.log('User disconnected: ' + socket.id);
-  });
-
   // Listen for messages and broadcast them
   socket.on('sendMessage', async (data) => {
     console.log('socket, message received:', data);
@@ -56,6 +52,10 @@ io.on('connection', (socket) => {
     } catch (error) {
       console.error('Error saving message:', error);
     }
+  });
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected: ' + socket.id);
   });
 });
 
