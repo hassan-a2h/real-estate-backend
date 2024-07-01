@@ -100,11 +100,19 @@ export const getUserChats = async (req, res) => {
 
 export const getChatMessages = async (req, res) => {
   const { chatId } = req.params;
-  const { userId } = req.query;
+  const { userId, lastMessageDate, limit = 20 } = req.query;
   const receiverId = userId;
 
   try {
-    const messages = await Message.find({ chatId });
+    let query = { chatId };
+    if (lastMessageDate) {
+      query.createdAt = { $lt: new Date(lastMessageDate) };
+    }
+
+    const messages = await Message.find(query)
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit));
+
     let unreadMessagesUpdated = false;
 
     // Update isRead status for messages intended for the logged-in user
@@ -121,9 +129,7 @@ export const getChatMessages = async (req, res) => {
       io.emit('unreadCountUpdated', { userId: receiverId });
     }
     
-    // Use sortedMessages in case you are using reflections
-    const sortedMessages = messages.reverse();
-    res.status(200).json(sortedMessages);
+    res.status(200).json(messages);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
