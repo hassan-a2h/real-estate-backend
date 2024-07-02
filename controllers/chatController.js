@@ -8,6 +8,12 @@ dotenv.config();
 export const getChat = async (req, res) => {
   const { userId, agentId, listingId, propertyTitle } = req.body;
 
+  if (userId === agentId) {
+    return res
+      .status(400)
+      .json('user can\'t chat with himself');
+  }
+
   try {
     let chat = await Chat.findOne({ userId, agentId });
 
