@@ -1,7 +1,6 @@
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
-import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import dbConnection from './db/config.js';
@@ -74,6 +73,9 @@ app.get('/api/test', (req, res) => {
   res.json({ message: 'Test endpoint is working' });
 });
 
+app.get('/*', (req, res) => {
+  return res.status(404).json({ message: '404 request no recognized' });
+});
 
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
