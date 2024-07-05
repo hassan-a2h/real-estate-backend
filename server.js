@@ -12,9 +12,15 @@ import messagesSocket from './sockets/messagesHandler.js';
 
 dotenv.config();
 const app = express();
+app.use(cors({
+  origin: '*', // Or specify allowed origins
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 const server = http.createServer(app);
 export const io = new Server(server, {
   cors: {
+    host: '0.0.0.0',
     origin: '*',
     methods: ['GET', 'POST']
   }
@@ -22,7 +28,7 @@ export const io = new Server(server, {
 const PORT = process.env.PORT || 3000;
 
 //  Middlewares used
-app.use(cors());
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -40,7 +46,7 @@ app.use('/api/socials', socialsRoutes);
 app.use('/api/c', chatRoutes);
 
 app.get('/', (req, res) => {
-  res.send('API is running...');
+  res.send('<h1>API is running...</h1>');
 });
 
 app.get('/api/test', (req, res) => {
@@ -51,6 +57,6 @@ app.get('/*', (req, res) => {
   return res.status(404).json({ message: '404 request no recognized' });
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`);
 });
