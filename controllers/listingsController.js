@@ -2,22 +2,25 @@ import Listing from '../models/Listing.js';
 
 // Get all listings
 export const getListings = async (req, res) => {
-  const { agentId, category } = req.query;
+  const defaultLimit = 5;
+  const { agentId, category, limit = defaultLimit, lastListingDate } = req.query;
 
   try {
+    let query = {};
     if (agentId) {
-      const listings = await Listing.find({ postedBy: agentId });
-      return res.status(200).json(listings);
-    } else if (category) {
-      const listings = await Listing.find({ category: category });
-      return res.status(200).json(listings);
+      query.postedBy = agentId;
     }
-  } catch(error) {
-    return res.status(500).json({ message: 'Error fetching listings', error });
-  }
+    if (category) {
+      query.category = category;
+    }
+    if (lastListingDate) {
+      query.createdAt = { $lt: new Date(lastListingDate) };
+    }
 
-  try {
-    const listings = await Listing.find();
+    const listings = await Listing.find(query)
+      .sort({ createdAt: -1 })
+      .limit(Number(limit));
+
     res.status(200).json(listings);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching listings', error });
