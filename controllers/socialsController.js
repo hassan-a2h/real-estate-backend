@@ -22,6 +22,19 @@ export const getOneSocialLink = async (req, res) => {
   }
 };
 
+export const getUserSocial = async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const social = await SocialMedia.findOne({ user: userId });
+    if (!social) {
+      return res.status(404).json({ message: 'Social not found' });
+    }
+    res.status(200).json(social);
+  } catch(err) {
+    res.status(500).json({ message: 'Error fetching social', err });
+  }
+}
+
 export const updateSocialLinks = async (req, res) => {
   const { twitterUrl, facebookUrl, instagramUrl, userId } = req.body;
   const user = await User.findOne({ _id: userId });
